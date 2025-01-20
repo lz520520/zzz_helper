@@ -1,0 +1,11 @@
+level_base:
+    1: 50
+    10: 94
+    20: 172
+    30: 281
+    40: 421
+    50: 592
+    60: 794
+monster_basic_defense:
+    dlh: 58
+    max: 60

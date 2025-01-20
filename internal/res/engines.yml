@@ -1,0 +1,14 @@
+- name: 深海访客
+  out_game:
+      attack: 713
+      critical_rate: 0.24
+      ice_damage_bonus: 0.25
+  in_game:
+      critical_rate: 0.2 # 普攻+冲刺攻击各加0.1
+- name: 霰落星殿
+  out_game:
+      attack: 743
+      critical_rate: 0.24
+  in_game:
+      critical_damage: 0.5
+      ice_damage_bonus: 0.4 # 强化特殊技或异常，冰属性伤害提升20%，两层独立时间15s
