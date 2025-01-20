@@ -12,6 +12,7 @@ import (
 	"strings"
 	"zzz_helper/internal/config"
 	"zzz_helper/internal/data"
+	"zzz_helper/internal/img"
 	"zzz_helper/internal/models"
 	"zzz_helper/internal/mylog"
 	"zzz_helper/internal/pic_parser"
@@ -138,12 +139,13 @@ func ParseDriveInfo(src string) (*models.DriverDiskStat, error) {
 	}
 	tmp = newTmp
 	count := 0
+	digitalPattern := regexp.MustCompile(`\+\d+`)
 	for i := 0; i < len(tmp); i++ {
 		name := tmp[i]
 		add := 0
 		value := tmp[i+1]
 
-		if strings.Contains(name, "+") {
+		if digitalPattern.MatchString(name) {
 			names := strings.SplitN(name, "+", 2)
 			name = strings.TrimSpace(names[0])
 			add, err = strconv.Atoi(names[1])
@@ -181,6 +183,50 @@ func isPicture(path string) bool {
 	}
 	return false
 }
+func parserDriver(client *pic_parser.Client, path string) error {
+	if !isPicture(path) {
+		return fmt.Errorf("not found picture")
+	}
+	png, err := file2.ReadFileBytes(path)
+	if err != nil {
+		return err
+	}
+	var disk *models.DriverDiskStat
+	for i := 0; i < 2; i++ {
+		var result string
+		var png2 []byte
+		if i == 0 {
+			png2, err = img.BinarizeImageWithBytes(png, 127)
+			if err != nil {
+				return err
+			}
+		} else if i == 1 {
+			png2 = png
+		}
+		result, err = client.Parse(png2)
+		if err != nil {
+			return err
+		}
+		mylog.CommonLogger.Info().Msgf("%s: %v", path, result)
+
+		disk, err = ParseDriveInfo(result)
+		if err != nil {
+			mylog.CommonLogger.Err(err).Send()
+			continue
+		}
+		break
+	}
+	if err != nil {
+		return err
+	}
+
+	m := map[string]interface{}{
+		uuid.New().String(): disk,
+	}
+	r, _ := yaml.Marshal(m)
+	file2.AppendFile(output, r)
+	return nil
+}
 
 var ocrCmd = &cobra.Command{
 	Use:   "ocr",
@@ -191,56 +237,20 @@ var ocrCmd = &cobra.Command{
 			return err
 		}
 		if isPicture(filename) {
-			png, err := file2.ReadFileBytes(filename)
-			if err != nil {
-				mylog.CommonLogger.Err(err).Send()
-				return nil
-			}
-			result, err := client.Parse(png)
-			if err != nil {
-				mylog.CommonLogger.Err(err).Send()
-				return nil
-			}
-			mylog.CommonLogger.Info().Msgf("%s: %v", filename, result)
-
-			disk, err := ParseDriveInfo(result)
+			err = parserDriver(client, filename)
 			if err != nil {
 				mylog.CommonLogger.Error().Msgf("%s: %s", filename, err.Error())
-				return nil
 			}
-			m := map[string]interface{}{
-				uuid.New().String(): disk,
-			}
-			r, _ := yaml.Marshal(m)
-			file2.AppendFile(output, r)
 			return nil
 		} else {
 			filepath.Walk(filename, func(path string, info os.FileInfo, err error) error {
-				if !strings.HasSuffix(path, ".png") {
+				if info.IsDir() {
 					return nil
 				}
-				png, err := file2.ReadFileBytes(path)
-				if err != nil {
-					mylog.CommonLogger.Err(err).Send()
-					return nil
-				}
-				result, err := client.Parse(png)
-				if err != nil {
-					mylog.CommonLogger.Err(err).Send()
-					return nil
-				}
-				mylog.CommonLogger.Info().Msgf("%s: %v", path, result)
-
-				disk, err := ParseDriveInfo(result)
+				err = parserDriver(client, path)
 				if err != nil {
 					mylog.CommonLogger.Error().Msgf("%s: %s", path, err.Error())
-					return nil
 				}
-				m := map[string]interface{}{
-					uuid.New().String(): disk,
-				}
-				r, _ := yaml.Marshal(m)
-				file2.AppendFile(output, r)
 				return nil
 			})
 		}
