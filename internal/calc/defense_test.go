@@ -60,7 +60,7 @@ func TestMiyabi(t *testing.T) {
 		LevelBase:          794,
 		MonsterBaseDefense: 60,
 		//DefenseReduction:   0.36,
-		PenetrationRadio: 0.32,
+		PenetrationRadio: 0.24,
 		Penetration:      0,
 	})
 	improve := out2/out1 - 1

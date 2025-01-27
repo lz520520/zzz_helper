@@ -26,4 +26,5 @@ func TestAttack2(t *testing.T) {
 
 	criticalRate := CriticalRateExpect(2.0040)
 	t.Logf("CriticalRate expect: %.2f%%", criticalRate*100)
+
 }
