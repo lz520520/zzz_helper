@@ -13,6 +13,8 @@ func TestAttack(t *testing.T) {
 	result = AttackBonusImprove(basicAttack, currentAttack, 1)
 	t.Logf("attack bonus: %.2f%%", result*100)
 
+	result = AttackImprove(currentAttack)
+	t.Logf("attack : %.2f%%", result*100)
 	result = AttackBonusImprove(basicAttack, currentAttack, 10)
 	t.Logf("attack bonus with main: %.2f%%", result*100)
 }

@@ -12,3 +12,19 @@
   in_game:
       critical_damage: 0.5
       ice_damage_bonus: 0.4 # 强化特殊技或异常，冰属性伤害提升20%，两层独立时间15s
+- name: 心弦夜响
+  out_game:
+      attack: 743
+      critical_rate: 0.24
+  in_game:
+      critical_damage: 0.5
+      damage_resistance: 0.25
+- name: 青溟笼舍
+  out_game:
+      attack: 743
+      hp_bonus: 0.3
+  in_game:
+      critical_rate: 0.2
+      ether_damage_bonus: 0.16
+      ether_sheer_damage_bonus: 0.2
+      

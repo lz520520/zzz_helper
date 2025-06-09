@@ -38,3 +38,12 @@ func CriticalDamageExpect(criticalRate float64) (criticalDamage float64) {
 	criticalDamage = data.BaseDriverDiskSubStat.CriticalDamage / data.BaseDriverDiskSubStat.CriticalRate * criticalRate
 	return
 }
+
+/*
+(1 + criticalDamage + 0.048) * criticalRate  / (1 + criticalDamage) * criticalRate  = improve +1
+criticalDamage =  (0.048 - improve) / improve
+*/
+func CriticalDamageExpect2(improve float64, count float64) (criticalDamage float64) {
+	criticalDamage = (data.BaseDriverDiskSubStat.CriticalDamage - improve*count) / improve * count
+	return
+}

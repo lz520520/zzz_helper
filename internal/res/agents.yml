@@ -41,4 +41,37 @@
           common_damage_bonus: 0.6 # 额外能力： 霜月伤害提升
 #          damage_resistance: -0.3 # 紊乱触发减抗
 
-          
+- name: 伊芙琳
+  stars:
+  attribute:
+      hp: 7788
+      attack: 854
+      defense: 612
+      critical_rate: 0.05
+      critical_damage: 0.5
+  core_passive:
+      out_game:
+          critical_rate: 0.144
+      in_game:
+          common_damage_bonus: 0.3
+          critical_rate: 0.25
+- name: 仪玄
+  stars:
+      - level: 1
+        in_game:
+            critical_rate: 0.1
+      - level: 2
+        in_game:
+            damage_resistance: -0.15
+  attribute:
+      hp: 7953
+      attack: 872
+      defense: 441
+      critical_rate: 0.05
+      critical_damage: 0.5
+  core_passive:
+      out_game:
+          critical_rate: 0.144
+          hp: 420
+      in_game:
+

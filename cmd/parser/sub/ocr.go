@@ -56,6 +56,13 @@ func GetSubAttribute(disk *models.DriverDiskStat, attrName string, add int, valu
 	}
 
 }
+
+func nameFix(name string) string {
+	if regexp.MustCompile(`云.*如我`).MatchString(name) {
+		name = "云岿如我"
+	}
+	return name
+}
 func ParseDriveInfo(src string) (*models.DriverDiskStat, error) {
 	disk := &models.DriverDiskStat{}
 	src = strings.TrimSpace(src)
@@ -64,11 +71,15 @@ func ParseDriveInfo(src string) (*models.DriverDiskStat, error) {
 	if positionStart == -1 {
 		return nil, fmt.Errorf("not found position")
 	}
-	disk.Name = src[:positionStart]
+	disk.Name = nameFix(src[:positionStart])
 
 	positionEnd := strings.Index(src[positionStart:], "]")
 	if positionEnd == -1 {
-		return nil, fmt.Errorf("not found position")
+		positionEnd = strings.Index(src[positionStart:], " ")
+		if positionEnd == -1 {
+			return nil, fmt.Errorf("not found position")
+		}
+
 	}
 	position, err := strconv.Atoi(src[positionStart+1 : positionStart+positionEnd])
 	if err != nil {
@@ -79,7 +90,7 @@ func ParseDriveInfo(src string) (*models.DriverDiskStat, error) {
 
 	mainAttrStart := strings.Index(src[offset:], "主属性")
 	if mainAttrStart == -1 {
-		return nil, fmt.Errorf("not found main attribute")
+		return nil, fmt.Errorf("not found main attribute index")
 	}
 	offset += mainAttrStart
 	tmp := string2.StringSplitWithoutSpace(src[offset:], " ")
@@ -116,7 +127,7 @@ func ParseDriveInfo(src string) (*models.DriverDiskStat, error) {
 		disk.Main.FireDamageBonus = data.BaseDriverDiskMainStat.FireDamageBonus
 	case strings.Contains(mainAttr, "冰属性伤害加成"):
 		disk.Main.IceDamageBonus = data.BaseDriverDiskMainStat.IceDamageBonus
-	case strings.Contains(mainAttr, "以太属性伤害加成"):
+	case strings.Contains(mainAttr, "以太伤害加成"):
 		disk.Main.EtherDamageBonus = data.BaseDriverDiskMainStat.EtherDamageBonus
 	case strings.Contains(mainAttr, "物理伤害加成"):
 		disk.Main.PhysicalDamageBonus = data.BaseDriverDiskMainStat.PhysicalDamageBonus

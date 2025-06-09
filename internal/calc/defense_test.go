@@ -8,11 +8,11 @@ import (
 
 func TestDefense(t *testing.T) {
 	t.Log(DefenseCalc(models.DefenseParam{
-		LevelBase:          592,
-		MonsterBaseDefense: 36,
+		LevelBase:          794,
+		MonsterBaseDefense: 60,
 		DefenseReduction:   0,
-		PenetrationRadio:   0,
-		Penetration:        21,
+		PenetrationRadio:   1,
+		Penetration:        0,
 	}))
 }
 
@@ -52,19 +52,26 @@ func TestMiyabi(t *testing.T) {
 	out1 := DefenseCalc(models.DefenseParam{
 		LevelBase:          794,
 		MonsterBaseDefense: 60,
-		//DefenseReduction:   0.36,
-		PenetrationRadio: 0.00,
-		Penetration:      0,
+		DefenseReduction:   0.0,
+		PenetrationRadio:   0.24,
+		Penetration:        0,
 	})
 	out2 := DefenseCalc(models.DefenseParam{
 		LevelBase:          794,
 		MonsterBaseDefense: 60,
-		//DefenseReduction:   0.36,
-		PenetrationRadio: 0.24,
-		Penetration:      0,
+		DefenseReduction:   0.0,
+		PenetrationRadio:   0.32,
+		Penetration:        0,
 	})
 	improve := out2/out1 - 1
-	t.Logf("miyabi improve with 32%%: %.2f%%", improve*100)
+	t.Logf("穿透盘提升: %.2f%%", improve*100)
+
+	expectDamage := 0.3 / improve
+	t.Logf("属性盘期望: %.2f%%", (expectDamage-1)*100)
+
+	expectAttack := AttackBonusExpected(1651, improve, 10)
+	t.Logf("攻击盘期望: %v", expectAttack)
+
 }
 
 func TestDamage(t *testing.T) {

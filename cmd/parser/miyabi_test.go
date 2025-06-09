@@ -24,8 +24,10 @@ func TestMiyabi(t *testing.T) {
 				InGame: models.AgentAttribute{
 					//AttackBonus:      0.128,
 					//DamageResistance: -0.2, // 怪物减抗
-					IceDamageBonus: 0.3,
-					Attack:         1200, // 耀佳音buff
+					IceDamageBonus:    0.3,
+					Attack:            1200, // 耀佳音buff
+					CriticalDamage:    0.25,
+					CommonDamageBonus: 0.2, // 佳音
 					//CommonDamageBonus: 0.2,  // 苍角核心被动额外能力增加冰伤20%
 				},
 			},

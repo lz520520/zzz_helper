@@ -3,7 +3,6 @@ package calc
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
-	"math"
 	"zzz_helper/internal/data"
 	"zzz_helper/internal/models"
 )
@@ -24,6 +23,7 @@ func DamageFuzz(param models.DamageFuzzParam) error {
 	if err != nil {
 		return err
 	}
+	agentInfo.Features = param.AgentFeatures
 
 	base := models.DamageParam{
 		AgentInfo: agentInfo,
@@ -84,6 +84,9 @@ func DamageCalc(param models.DamageParam, inGameAttrFilter func(attr models.Agen
 			star = append(star, s)
 		}
 	}
+	/*
+	   局外
+	*/
 	// 局外白值计算
 	// 代理人基本属性 + 武器属性 + 核心被动属性 + 影画加成
 	baseAttribute := param.AgentInfo.Attribute
@@ -98,54 +101,37 @@ func DamageCalc(param models.DamageParam, inGameAttrFilter func(attr models.Agen
 
 	// 代理人黄值计算
 	// 白值 + 驱动盘属性 + 驱动盘套装属性
-	driverDiskFinalStat := models.DriverDiskStat{}
-	for _, disk := range param.DriverDisks.Disks {
-		driverDiskFinalStat.Add(disk)
-	}
-	driverDiskFinalStat.Add(param.TestData.Disk)
-
-	agentOutGameAttribute.Attack = baseAttribute.Attack*
-		(1+driverDiskFinalStat.Main.AttackBonus+driverDiskFinalStat.Sub.AttackBonus+param.DriverDisks.AttackBonus) +
-		driverDiskFinalStat.Main.Attack + driverDiskFinalStat.Sub.Attack
-
-	agentOutGameAttribute.CommonDamageBonus += driverDiskFinalStat.Main.CommonDamageBonus
-	agentOutGameAttribute.IceDamageBonus += driverDiskFinalStat.Main.IceDamageBonus
-	agentOutGameAttribute.FireDamageBonus += driverDiskFinalStat.Main.FireDamageBonus
-	agentOutGameAttribute.PhysicalDamageBonus += driverDiskFinalStat.Main.PhysicalDamageBonus
-	agentOutGameAttribute.ElectricDamageBonus += driverDiskFinalStat.Main.ElectricDamageBonus
-	agentOutGameAttribute.EtherDamageBonus += driverDiskFinalStat.Main.EtherDamageBonus
-
-	agentOutGameAttribute.CriticalRate += driverDiskFinalStat.Main.CriticalRate + driverDiskFinalStat.Sub.CriticalRate
-	agentOutGameAttribute.CriticalDamage += driverDiskFinalStat.Main.CriticalDamage + driverDiskFinalStat.Sub.CriticalDamage
-
-	agentOutGameAttribute.Penetration += driverDiskFinalStat.Sub.Penetration
-	agentOutGameAttribute.PenetrationRadio += driverDiskFinalStat.Main.PenetrationRadio
-
-	agentOutGameAttribute.AnomalyProficiency += driverDiskFinalStat.Main.AnomalyProficiency + driverDiskFinalStat.Sub.AnomalyProficiency
-	agentOutGameAttribute.AnomalyMastery += driverDiskFinalStat.Main.AnomalyMastery
-
-	agentOutGameAttribute.EnergyRegen += driverDiskFinalStat.Main.EnergyRegen
-
-	agentOutGameAttribute.HP = baseAttribute.HP*
-		(1+driverDiskFinalStat.Sub.HPBonus) +
-		driverDiskFinalStat.Main.HP + driverDiskFinalStat.Sub.HP
-	agentOutGameAttribute.Defense = baseAttribute.Defense*
-		(1+driverDiskFinalStat.Sub.DefenseBonus) +
-		driverDiskFinalStat.Main.Defense + driverDiskFinalStat.Sub.Defense
 	// 驱动盘套装
 	agentOutGameAttribute.Add(param.DriverDisks.SetAttribute.OutGame)
 	agentOutGameAttribute.Add(param.TestData.Attribute.OutGame)
+	agentOutGameAttribute.AddDisk(param.TestData.Disk)
 
-	if math.Round(agentOutGameAttribute.CriticalDamage*1000)/1000 == 1.604 &&
-		math.Round(agentOutGameAttribute.CriticalRate*1000)/1000 == 0.698 &&
-		math.Round(agentOutGameAttribute.Defense) == 951 {
-		fmt.Println("critical damage")
+	// 计算局外黄字
+	agentOutGameAttribute.Attack = baseAttribute.Attack*agentOutGameAttribute.AttackBonus +
+		agentOutGameAttribute.Attack
+
+	agentOutGameAttribute.HP = baseAttribute.HP*agentOutGameAttribute.HPBonus +
+		agentOutGameAttribute.HP
+
+	agentOutGameAttribute.Defense = baseAttribute.Defense*agentOutGameAttribute.DefenseBonus +
+		agentOutGameAttribute.Defense
+	if param.AgentInfo.Features.Attribute2Sheer != nil {
+		agentOutGameAttribute.SheerForce = param.AgentInfo.Features.Attribute2Sheer(agentOutGameAttribute)
 	}
+
+	//if math.Round(agentOutGameAttribute.CriticalDamage*1000)/1000 == 1.604 &&
+	//    math.Round(agentOutGameAttribute.CriticalRate*1000)/1000 == 0.698 &&
+	//    math.Round(agentOutGameAttribute.Defense) == 951 {
+	//    fmt.Println("critical damage")
+	//}
 	//data1, _ := json.MarshalIndent(agentOutGameAttribute, "", "  ")
 	//fmt.Printf("out: %s\n", string(data1))
+	/*
+	   局内
+	*/
 	// 代理人局内面板 + 影画  + 武器属性 + 核心被动属性 + 驱动盘套装
 	agentInGameAttribute := models.AgentAttribute{}
-	agentInGameAttribute.Add(agentOutGameAttribute)
+	agentInGameAttribute.AddWithoutBonus(agentOutGameAttribute)
 	agentInGameAttribute.Add(param.WeaponEngine.InGame)
 	agentInGameAttribute.Add(param.AgentInfo.CorePassive.InGame)
 	agentInGameAttribute.Add(param.DriverDisks.SetAttribute.InGame)
@@ -156,6 +142,10 @@ func DamageCalc(param models.DamageParam, inGameAttrFilter func(attr models.Agen
 	agentInGameAttribute.Add(param.TestData.Attribute.InGame)
 
 	agentInGameAttribute.Fix()
+	if param.AgentInfo.Features.Attribute2Sheer != nil {
+		agentInGameAttribute.SheerForce = param.AgentInfo.Features.Attribute2Sheer(agentInGameAttribute)
+	}
+
 	if inGameAttrFilter != nil && !inGameAttrFilter(agentInGameAttribute) {
 		return &models.DamageCalcResult{}, nil
 	}
@@ -163,47 +153,78 @@ func DamageCalc(param models.DamageParam, inGameAttrFilter func(attr models.Agen
 
 	//fmt.Printf("in: %s\n", string(data1))
 	damage := models.Damage{
-		Attack:            agentInGameAttribute.Attack + agentInGameAttribute.AttackBonus*agentOutGameAttribute.Attack,
-		DamageMultiplier:  param.TestData.DamageMultiplier,
-		CriticalDamage:    agentInGameAttribute.CriticalDamage,
-		CriticalRate:      agentInGameAttribute.CriticalRate,
-		DamageResistance:  1 - agentInGameAttribute.DamageResistance,
-		CommonDamageBonus: 1 + agentInGameAttribute.CommonDamageBonus,
+		Attack:                 agentInGameAttribute.Attack + agentInGameAttribute.AttackBonus*agentOutGameAttribute.Attack,
+		DamageMultiplier:       param.TestData.DamageMultiplier,
+		CriticalDamage:         agentInGameAttribute.CriticalDamage,
+		CriticalRate:           agentInGameAttribute.CriticalRate,
+		DamageResistance:       agentInGameAttribute.DamageResistance,
+		CommonDamageBonus:      agentInGameAttribute.CommonDamageBonus,
+		CommonSheerDamageBonus: agentInGameAttribute.CommonSheerDamageBonus,
 		//DefenseReduction:     1 - agentInGameAttribute.DefenseReduction,
 		StunDamageMultiplier: 1.5 + agentInGameAttribute.StunDamageMultiplier,
+		HP:                   agentInGameAttribute.HP + agentInGameAttribute.HPBonus*agentOutGameAttribute.HP,
 	}
+	// 贯穿力转模
+	if param.AgentInfo.Features.Attribute2Sheer != nil {
+		damage.SheerForce = param.AgentInfo.Features.Attribute2Sheer(models.AgentAttribute{HP: damage.HP, Attack: damage.Attack})
+	}
+
 	//减防计算
-	damage.DefenseReduction = DefenseCalc(models.DefenseParam{
-		LevelBase:          param.TestData.LevelBase,
-		MonsterBaseDefense: param.TestData.MonsterBaseDefense,
-		DefenseReduction:   agentInGameAttribute.DefenseReduction,
-		PenetrationRadio:   agentInGameAttribute.PenetrationRadio,
-		Penetration:        agentInGameAttribute.Penetration,
-	})
+	if param.AgentInfo.Features.LifeDestroy {
+		damage.DefenseReduction = 1
+	} else {
+		damage.DefenseReduction = DefenseCalc(models.DefenseParam{
+			LevelBase:          param.TestData.LevelBase,
+			MonsterBaseDefense: param.TestData.MonsterBaseDefense,
+			DefenseReduction:   agentInGameAttribute.DefenseReduction,
+			PenetrationRadio:   agentInGameAttribute.PenetrationRadio,
+			Penetration:        agentInGameAttribute.Penetration,
+		})
+	}
+
 	// 属性增伤计算
 	damageBonus := 0.0
+	sheerDamageBonus := 0.0
 	switch param.Attribute {
 	case models.AttrIce:
 		damageBonus = agentInGameAttribute.IceDamageBonus
+		sheerDamageBonus = agentInGameAttribute.IceSheerDamageBonus
 	case models.AttrElectric:
 		damageBonus = agentInGameAttribute.ElectricDamageBonus
+		sheerDamageBonus = agentInGameAttribute.ElectricSheerDamageBonus
 	case models.AttrPhysical:
 		damageBonus = agentInGameAttribute.PhysicalDamageBonus
+		sheerDamageBonus = agentInGameAttribute.PhysicalSheerDamageBonus
 	case models.AttrFire:
 		damageBonus = agentInGameAttribute.FireDamageBonus
+		sheerDamageBonus = agentInGameAttribute.FireSheerDamageBonus
 	case models.AttrEther:
 		damageBonus = agentInGameAttribute.EtherDamageBonus
+		sheerDamageBonus = agentInGameAttribute.EtherSheerDamageBonus
 	}
 	damage.CommonDamageBonus += damageBonus
+	damage.CommonSheerDamageBonus += sheerDamageBonus
 	//damage.CriticalRate = 1
 	// 输出计算
 	// 爆伤 = (1 + CriticalDamage) * CriticalRate + 1 * (1-CriticalRate) =  CriticalDamage * CriticalRate + 1
-	output := damage.Attack *
-		damage.DamageMultiplier *
-		(damage.CriticalDamage*damage.CriticalRate + 1) *
-		damage.DamageResistance *
-		damage.CommonDamageBonus *
-		damage.DefenseReduction
+	var output float64
+	if param.AgentInfo.Features.LifeDestroy {
+		output = damage.SheerForce *
+			damage.DamageMultiplier *
+			(damage.CriticalDamage*damage.CriticalRate + 1) *
+			(1 - damage.DamageResistance) *
+			(1 + damage.CommonDamageBonus) *
+			(1 + damage.CommonSheerDamageBonus) *
+			damage.DefenseReduction
+	} else {
+		output = damage.Attack *
+			damage.DamageMultiplier *
+			(damage.CriticalDamage*damage.CriticalRate + 1) *
+			damage.DamageResistance *
+			damage.CommonDamageBonus *
+			damage.DefenseReduction
+	}
+
 	if param.Stun {
 		output = output * damage.StunDamageMultiplier
 	}
@@ -229,23 +250,25 @@ func DamageCalc(param models.DamageParam, inGameAttrFilter func(attr models.Agen
 	//    criticalRateExpected = 1
 	//}
 	if param.Improve {
-		attackImprove := AttackBonusImprove(baseAttribute.Attack, damage.Attack, 1)
-		criticalRateImprove, criticalDamageImprove := CriticalImprove(models.CriticalParam{
-			CriticalDamage: damage.CriticalDamage,
-			CriticalRate:   damage.CriticalRate,
-		}, 1)
-		penetrationImprove := DefensePenetrationImprove(models.DefenseParam{
-			LevelBase:          param.TestData.LevelBase,
-			MonsterBaseDefense: param.TestData.MonsterBaseDefense,
-			DefenseReduction:   agentInGameAttribute.DefenseReduction,
-			PenetrationRadio:   agentInGameAttribute.PenetrationRadio,
-			Penetration:        agentInGameAttribute.Penetration,
-		})
+		if param.AgentInfo.Features.LifeDestroy {
 
-		criticalRateExpected := CriticalRateExpect(damage.CriticalDamage)
-		attackExpected := AttackBonusExpected(baseAttribute.Attack, criticalDamageImprove, 1)
+			attackImprove := AttackBonusImprove(baseAttribute.Attack, damage.Attack, 1)
+			criticalRateImprove, criticalDamageImprove := CriticalImprove(models.CriticalParam{
+				CriticalDamage: damage.CriticalDamage,
+				CriticalRate:   damage.CriticalRate,
+			}, 1)
+			penetrationImprove := DefensePenetrationImprove(models.DefenseParam{
+				LevelBase:          param.TestData.LevelBase,
+				MonsterBaseDefense: param.TestData.MonsterBaseDefense,
+				DefenseReduction:   agentInGameAttribute.DefenseReduction,
+				PenetrationRadio:   agentInGameAttribute.PenetrationRadio,
+				Penetration:        agentInGameAttribute.Penetration,
+			})
 
-		fmt.Printf(`
+			criticalRateExpected := CriticalRateExpect(damage.CriticalDamage)
+			attackExpected := AttackBonusExpected(baseAttribute.Attack, criticalDamageImprove, 1)
+
+			fmt.Printf(`
 当前局内
     暴伤: %.2f%%
     暴击: %.2f%%
@@ -259,24 +282,75 @@ func DamageCalc(param models.DamageParam, inGameAttrFilter func(attr models.Agen
 爆伤词条收益大于暴击率，需局内暴击率: %.2f%%
 爆伤词条收益大于攻击力，需局内攻击力: %v
 `,
-			damage.CriticalDamage*100,
-			damage.CriticalRate*100,
-			damage.Attack,
+				damage.CriticalDamage*100,
+				damage.CriticalRate*100,
+				damage.Attack,
 
-			criticalDamageImprove*100,
-			criticalRateImprove*100,
-			attackImprove*100,
-			penetrationImprove*100,
+				criticalDamageImprove*100,
+				criticalRateImprove*100,
+				attackImprove*100,
+				penetrationImprove*100,
 
-			criticalRateExpected*100,
-			attackExpected,
-		)
+				criticalRateExpected*100,
+				attackExpected,
+			)
+		} else {
+			attackImprove := AttackBonusImprove(baseAttribute.Attack, damage.Attack, 1)
+			criticalRateImprove, criticalDamageImprove := CriticalImprove(models.CriticalParam{
+				CriticalDamage: damage.CriticalDamage,
+				CriticalRate:   damage.CriticalRate,
+			}, 1)
+			penetrationImprove := DefensePenetrationImprove(models.DefenseParam{
+				LevelBase:          param.TestData.LevelBase,
+				MonsterBaseDefense: param.TestData.MonsterBaseDefense,
+				DefenseReduction:   agentInGameAttribute.DefenseReduction,
+				PenetrationRadio:   agentInGameAttribute.PenetrationRadio,
+				Penetration:        agentInGameAttribute.Penetration,
+			})
+
+			criticalRateExpected := CriticalRateExpect(damage.CriticalDamage)
+			attackExpected := AttackBonusExpected(baseAttribute.Attack, criticalDamageImprove, 1)
+
+			fmt.Printf(`
+当前局内
+    暴伤: %.2f%%
+    暴击: %.2f%%
+    攻击: %v
+
+爆伤词条收益:   %.2f%%
+暴击词条收益:   %.2f%%
+大攻击词条收益: %.2f%%
+穿透值词条收益: %.2f%%
+
+爆伤词条收益大于暴击率，需局内暴击率: %.2f%%
+爆伤词条收益大于攻击力，需局内攻击力: %v
+`,
+				damage.CriticalDamage*100,
+				damage.CriticalRate*100,
+				damage.Attack,
+
+				criticalDamageImprove*100,
+				criticalRateImprove*100,
+				attackImprove*100,
+				penetrationImprove*100,
+
+				criticalRateExpected*100,
+				attackExpected,
+			)
+		}
+
 	}
 
 	return &models.DamageCalcResult{
 		Output:      output,
 		OutGameAttr: agentOutGameAttribute,
 		InGameAttr:  agentInGameAttribute,
+		BaseAttr:    baseAttribute,
 		Damage:      damage,
 	}, nil
+}
+
+func DamageExpect(improve float64, damageBonus float64) (outDamageBonus float64) {
+	outDamageBonus = damageBonus/improve - 1
+	return
 }

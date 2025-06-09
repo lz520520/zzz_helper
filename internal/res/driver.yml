@@ -28,3 +28,11 @@
   piece4:
       in_game:
           attack_bonus: 0.27 # 普攻、闪避反击、强化特殊技分别增加9%攻击力，6秒独立计算时间
+- name: 云岿如我
+  piece2:
+      out_game:
+          hp_bonus: 0.1
+  piece4:
+      in_game:
+          critical_rate: 0.12 # 发动[强化特殊技]、[连携技]、[终结技]时，暴击率提升4%，最多叠加3层，持续15秒
+          common_sheer_damage_bonus: 0.10 # 拥有3层效果时，造成的贯穿伤害提升10%
