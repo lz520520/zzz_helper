@@ -5,3 +5,12 @@ conf
 tmpout
 out
 .idea
+
+
+build/bin
+
+
+# 文档
+README.pdf
+release
+

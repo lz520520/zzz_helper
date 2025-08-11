@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	LOG_DEBUG = true
+	LOG_DEBUG = false
 )
 var CommonLogger zerolog.Logger
 var FileLogger zerolog.Logger

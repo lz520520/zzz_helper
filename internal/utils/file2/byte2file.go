@@ -55,8 +55,8 @@ func (f *OpenFile) Read(b []byte) (int, error) {
 }
 
 var (
-//_ io.Seeker   = (*OpenFile)(nil)
-//_ fs.FileInfo = (*bytesFile)(nil)
+// _ io.Seeker   = (*OpenFile)(nil)
+// _ fs.FileInfo = (*bytesFile)(nil)
 )
 
 func (f *OpenFile) Seek(offset int64, whence int) (int64, error) {

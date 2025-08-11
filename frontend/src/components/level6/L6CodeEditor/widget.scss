@@ -1,0 +1,114 @@
+@import 'variables.scss';
+
+input[type='checkbox'] {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  width: 1em;
+  height: 1em;
+  color: currentColor;
+  border: 0.15em solid $text-secondary;
+  border-radius: 1px;
+  cursor: pointer;
+  font: inherit;
+  display: inline-grid;
+  place-content: center;
+
+  &::before {
+    content: '';
+    width: 0.65em;
+    height: 0.65em;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    transform: scale(0);
+    transform-origin: bottom left;
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em var(--form-control-color);
+    background-color: $text-secondary;
+  }
+
+  &:checked {
+    border-color: transparent;
+    background-color: $widget-primary;
+    &::before {
+      transform: scale(1);
+      background-color: $white;
+    }
+  }
+
+  &:focus {
+    outline: 2px solid $text-secondary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    border-color: $text-divider;
+    &:checked {
+      border-color: transparent;
+      background-color: $text-divider;
+    }
+  }
+}
+
+:deep(::-webkit-scrollbar) {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+:deep(::-webkit-scrollbar-track) {
+  border-radius: 0;
+  background-color: $header-bg;
+}
+
+:deep(::-webkit-scrollbar-thumb) {
+  border-radius: 0;
+  background-color: $text-disabled;
+  &:hover {
+    background-color: $text-color;
+  }
+}
+
+:deep(select) {
+  outline: none;
+  margin: 0;
+  background-color: transparent;
+  border: 1px solid $text-secondary;
+  border-radius: 1px;
+  padding: 1px 0.2em;
+  color: $text-color;
+  cursor: pointer;
+}
+
+$range-size: 10px;
+input[type='range'] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: $range-size;
+  background: $body-bg;
+  outline: none;
+  opacity: 0.8;
+  -webkit-transition: 180ms;
+  transition: opacity 180ms;
+  &:hover {
+    opacity: 1;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: $range-size;
+    height: $range-size;
+    background: $widget-primary;
+    cursor: pointer;
+  }
+
+  &::-moz-range-thumb {
+    width: $range-size;
+    height: $range-size;
+    border: none;
+    border-radius: 1px;
+    background: $widget-primary;
+    cursor: pointer;
+  }
+}
+

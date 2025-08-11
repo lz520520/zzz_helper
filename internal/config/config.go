@@ -1,34 +1,29 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
-	"zzz_helper/internal/models"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 	"zzz_helper/internal/utils/file2"
 )
 
 var (
-	ConfigPath  = "conf/config.yml"
+	DataPath    = "db/data.db"
+	CachePath   = "db/cache.db"
 	CurrentPath = ""
-
-	GlobalConfig models.Config
+	CacheDir    = "cache"
+	TmpDir      = "tmp"
 )
 
 func init() {
-	//CurrentPath = filepath.Dir(file2.GetAbsPath(os.Args[0]))
-	//ConfigPath = path.Join(CurrentPath, ConfigPath)
-
-	content, err := file2.ReadFileBytes(ConfigPath)
-	if err != nil {
-		c, _ := yaml.Marshal(GlobalConfig)
-		err = file2.WriteFile(ConfigPath, c)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		err = yaml.Unmarshal(content, &GlobalConfig)
-		if err != nil {
-			panic(err)
-		}
+	CurrentPath = filepath.Dir(file2.GetAbsPath(os.Args[0]))
+	if strings.Contains(CurrentPath, "/Contents/MacOS") {
+		CurrentPath = filepath.Join(CurrentPath, "../../../")
 	}
+
+	CacheDir = path.Join(CurrentPath, CacheDir)
+	DataPath = path.Join(CurrentPath, DataPath)
+	TmpDir = path.Join(CurrentPath, TmpDir)
 
 }

@@ -1,0 +1,76 @@
+html,
+body,
+#root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    //font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    //  'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    //  'Noto Color Emoji';
+    font-family: Consolas, 'Microsoft YaHei', serif;
+    --separator-border: skyblue;
+    --contexify-zIndex: 9999;
+}
+
+.colorWeak {
+    filter: invert(80%);
+}
+
+.ant-layout {
+    min-height: 100vh;
+}
+
+.ant-pro-sider.ant-layout-sider.ant-pro-sider-fixed {
+    left: unset;
+}
+// railgun使用
+.ant-pro-layout .ant-pro-sider.ant-pro-sider-fixed-mix{
+    inset-block-start: 0;
+    height: 100%;
+}
+canvas {
+    display: block;
+}
+
+body {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+ul,
+ol {
+    list-style: none;
+}
+
+@media (max-width: 768px) {
+    .ant-table {
+        width: 100%;
+        overflow-x: auto;
+
+        &-thead > tr,
+        &-tbody > tr {
+            > th,
+            > td {
+                white-space: pre;
+
+                > span {
+                    display: block;
+                }
+            }
+        }
+    }
+}
+
+.ant-layout-has-sider {
+    height: 100%;
+    min-height: unset !important;
+}
+
+.ant-pro-top-nav-header .anticon {
+    color: #fff !important;
+}
+
+.ant-pro-sider-collapsed-button {
+    border: 1px solid hsla(0,0%,100%,.65);
+}

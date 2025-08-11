@@ -10,14 +10,13 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"zzz_helper/internal/config"
-	"zzz_helper/internal/data"
-	"zzz_helper/internal/img"
-	"zzz_helper/internal/models"
 	"zzz_helper/internal/mylog"
-	"zzz_helper/internal/pic_parser"
 	"zzz_helper/internal/utils/file2"
 	"zzz_helper/internal/utils/string2"
+	"zzz_helper/modules/zzz/data"
+	"zzz_helper/modules/zzz/img"
+	"zzz_helper/modules/zzz/models"
+	pic_parser2 "zzz_helper/modules/zzz/pic_parser"
 )
 
 var (
@@ -27,7 +26,7 @@ var (
 
 func GetSubAttribute(disk *models.DriverDiskStat, attrName string, add int, value string) {
 	switch true {
-	case strings.Contains(attrName, "暴击率"):
+	case strings.Contains(attrName, "暴击率") || strings.Contains(attrName, "击率"):
 		disk.Sub.CriticalRate = data.BaseDriverDiskSubStat.CriticalRate * float64(add+1)
 	case strings.Contains(attrName, "暴击伤害"):
 		disk.Sub.CriticalDamage = data.BaseDriverDiskSubStat.CriticalDamage * float64(add+1)
@@ -60,42 +59,36 @@ func GetSubAttribute(disk *models.DriverDiskStat, attrName string, add int, valu
 func nameFix(name string) string {
 	if regexp.MustCompile(`云.*如我`).MatchString(name) {
 		name = "云岿如我"
+	} else if regexp.MustCompile(`河\w电音`).MatchString(name) {
+		name = "河豚电音"
 	}
-	return name
+	return strings.TrimSpace(name)
 }
 func ParseDriveInfo(src string) (*models.DriverDiskStat, error) {
-	disk := &models.DriverDiskStat{}
-	src = strings.TrimSpace(src)
-	offset := 0
-	positionStart := strings.Index(src, "[")
-	if positionStart == -1 {
-		return nil, fmt.Errorf("not found position")
+	lines := string2.StringSplitWithoutSpace(src, "\n")
+	if len(lines) < 8 {
+		return nil, fmt.Errorf("lines is error")
 	}
-	disk.Name = nameFix(src[:positionStart])
+	disk := &models.DriverDiskStat{}
 
-	positionEnd := strings.Index(src[positionStart:], "]")
+	// 驱动盘名字
+	positionStart := strings.Index(lines[0], "[")
+	if positionStart == -1 {
+		return nil, fmt.Errorf("name not found position")
+	}
+	disk.Name = nameFix(lines[0][:positionStart])
+	positionEnd := strings.Index(lines[0][positionStart:], "]")
 	if positionEnd == -1 {
-		positionEnd = strings.Index(src[positionStart:], " ")
+		positionEnd = strings.Index(lines[0][positionStart:], " ")
 		if positionEnd == -1 {
 			return nil, fmt.Errorf("not found position")
 		}
-
 	}
 	position, err := strconv.Atoi(src[positionStart+1 : positionStart+positionEnd])
-	if err != nil {
-		return nil, fmt.Errorf("not found position")
-	}
-	offset += positionStart + positionEnd
 	disk.Position = position
 
-	mainAttrStart := strings.Index(src[offset:], "主属性")
-	if mainAttrStart == -1 {
-		return nil, fmt.Errorf("not found main attribute index")
-	}
-	offset += mainAttrStart
-	tmp := string2.StringSplitWithoutSpace(src[offset:], " ")
-	mainAttr := tmp[1]
-
+	// 主属性
+	mainAttr := lines[3]
 	switch true {
 	case strings.Contains(mainAttr, "攻击力"):
 		if disk.Position == 2 {
@@ -115,7 +108,7 @@ func ParseDriveInfo(src string) (*models.DriverDiskStat, error) {
 		} else {
 			disk.Main.HPBonus = data.BaseDriverDiskMainStat.HPBonus
 		}
-	case strings.Contains(mainAttr, "暴击率"):
+	case strings.Contains(mainAttr, "暴击率") || strings.Contains(mainAttr, "击率"):
 		disk.Main.CriticalRate = data.BaseDriverDiskMainStat.CriticalRate
 	case strings.Contains(mainAttr, "暴击伤害"):
 		disk.Main.CriticalDamage = data.BaseDriverDiskMainStat.CriticalDamage
@@ -136,49 +129,37 @@ func ParseDriveInfo(src string) (*models.DriverDiskStat, error) {
 	default:
 		return nil, fmt.Errorf("not found main attribute")
 	}
-	if tmp[3] != "副属性" {
-		return nil, fmt.Errorf("not found sub attribute")
-	}
-	tmp = tmp[4:]
-	newTmp := make([]string, 0)
-	pattern := regexp.MustCompile(`^\p{Han}\+$`)
-	for _, s := range tmp {
-		if pattern.MatchString(s) {
-			continue
-		}
-		newTmp = append(newTmp, s)
-	}
-	tmp = newTmp
+	pattern := regexp.MustCompile(`^(\p{Han}+)\s*\+[\s|\.]*(\d)\s+([\d|\.]+\%*)$`)
+	pattern2 := regexp.MustCompile(`^(\p{Han}+)\s+([\d|\.]+\%*)$`)
 	count := 0
-	digitalPattern := regexp.MustCompile(`\+\d+`)
-	for i := 0; i < len(tmp); i++ {
-		name := tmp[i]
+	for _, line := range lines[5:] {
+		name := ""
 		add := 0
-		value := tmp[i+1]
+		value := ""
+		if strings.Contains(line, "+") {
+			groups := pattern.FindStringSubmatch(line)
+			if groups == nil {
+				return nil, fmt.Errorf("sub attribute parse error: %s", line)
+			}
+			add, err = strconv.Atoi(groups[2])
+			if err != nil {
+				return nil, fmt.Errorf("%s parser error: %s", groups[2], line)
+			}
+			name = groups[1]
+			value = groups[3]
 
-		if digitalPattern.MatchString(name) {
-			names := strings.SplitN(name, "+", 2)
-			name = strings.TrimSpace(names[0])
-			add, err = strconv.Atoi(names[1])
-			if err != nil {
-				return nil, fmt.Errorf("%s parser error", names[1])
-			}
-			i += 1
-		} else if strings.Contains(value, "+") {
-			index := strings.Index(value, "+")
-			add, err = strconv.Atoi(value[index:])
-			if err != nil {
-				return nil, fmt.Errorf("%s parser error", value[index:])
-			}
-			value = tmp[i+2]
-			i += 2
 		} else {
-			i += 1
+			groups := pattern2.FindStringSubmatch(line)
+			if groups == nil {
+				return nil, fmt.Errorf("sub attribute parse error: %s", line)
+			}
+			name = groups[1]
+			value = groups[2]
 		}
-		count += add
-
 		GetSubAttribute(disk, name, add, value)
+		count += add
 	}
+
 	if count < 4 || count > 5 {
 		return nil, fmt.Errorf("parser sub attribute count %v", count)
 	}
@@ -194,7 +175,7 @@ func isPicture(path string) bool {
 	}
 	return false
 }
-func parserDriver(client *pic_parser.Client, path string) error {
+func parserDriver(client *pic_parser2.Client, path string) error {
 	if !isPicture(path) {
 		return fmt.Errorf("not found picture")
 	}
@@ -239,16 +220,45 @@ func parserDriver(client *pic_parser.Client, path string) error {
 	return nil
 }
 
+func parserDriverWithTesseract(path string) error {
+	if !isPicture(path) {
+		return fmt.Errorf("not found picture")
+	}
+	var disk *models.DriverDiskStat
+	for i := 0; i < 2; i++ {
+		var result string
+		result, err := pic_parser2.ParseWithTesseract(path)
+		if err != nil {
+			return err
+		}
+		mylog.CommonLogger.Info().Msgf("%s: %v", path, result)
+
+		disk, err = ParseDriveInfo(result)
+		if err != nil {
+			mylog.CommonLogger.Err(err).Send()
+			continue
+		}
+		break
+	}
+
+	m := map[string]interface{}{
+		uuid.New().String(): disk,
+	}
+	r, _ := yaml.Marshal(m)
+	file2.AppendFile(output, r)
+	return nil
+}
+
 var ocrCmd = &cobra.Command{
 	Use:   "ocr",
 	Short: "use ocr generate driver info",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client, err := pic_parser.NewClient(config.GlobalConfig.AliyunAuth.AK, config.GlobalConfig.AliyunAuth.SK)
-		if err != nil {
-			return err
-		}
+		//client, err := pic_parser.NewClient(config.GlobalConfig.AliyunAuth.AK, config.GlobalConfig.AliyunAuth.SK)
+		//if err != nil {
+		//    return err
+		//}
 		if isPicture(filename) {
-			err = parserDriver(client, filename)
+			err := parserDriverWithTesseract(filename)
 			if err != nil {
 				mylog.CommonLogger.Error().Msgf("%s: %s", filename, err.Error())
 			}
@@ -258,7 +268,7 @@ var ocrCmd = &cobra.Command{
 				if info.IsDir() {
 					return nil
 				}
-				err = parserDriver(client, path)
+				err = parserDriverWithTesseract(path)
 				if err != nil {
 					mylog.CommonLogger.Error().Msgf("%s: %s", path, err.Error())
 				}

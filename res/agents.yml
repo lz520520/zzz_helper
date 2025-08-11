@@ -1,0 +1,104 @@
+- name: 艾莲·乔
+  self_attribute: ice
+  stars:
+      - level: 1
+        in_game:
+            critical_rate: 0.12
+  attribute:
+      hp: 7673
+      attack: 863
+      defense: 606
+      critical_rate: 0.05
+      critical_damage: 0.5
+  core_passive:
+      out_game:
+          attack: 75
+          critical_rate: 0.144
+      in_game:
+          critical_damage: 0.6 # 冲刺攻击/急冻普攻/霜锋/冰刃浪/连携/大招可吃到，原100%暂时取0.6
+          ice_damage_bonus: 0.3 # 额外能力： 10次攻击叠满
+- name: 星见雅
+  self_attribute: ice
+  stars:
+      - level: 1
+        in_game:
+            defense_reduction: 0.36
+      - level: 2
+        in_game:
+            critical_rate: 0.15
+      - level: 4
+        in_game:
+#            ice_damage_bonus: 0.3 # 霜灼·破伤害增加
+      - level: 6
+        in_game:
+            ice_damage_bonus: 0.3 # 霜月增伤
+  attribute:
+      hp: 7673
+      attack: 805
+      defense: 606
+      critical_rate: 0.05
+      critical_damage: 0.5
+  core_passive:
+      in_game:
+          common_damage_bonus: 0.6 # 额外能力： 霜月伤害提升
+#          damage_resistance: -0.3 # 紊乱触发减抗
+
+- name: 伊芙琳
+  self_attribute: fire
+  stars:
+  attribute:
+      hp: 7788
+      attack: 854
+      defense: 612
+      critical_rate: 0.05
+      critical_damage: 0.5
+  core_passive:
+      out_game:
+          critical_rate: 0.144
+      in_game:
+          common_damage_bonus: 0.3
+          critical_rate: 0.25
+- name: 仪玄
+  self_attribute: ether
+  stars:
+      - level: 1
+        in_game:
+            critical_rate: 0.1
+      - level: 2
+        in_game:
+            damage_resistance: -0.15
+  attribute:
+      hp: 7953
+      attack: 872
+      defense: 441
+      critical_rate: 0.05
+      critical_damage: 0.5
+  core_passive:
+      out_game:
+          critical_rate: 0.144
+          hp: 420
+      in_game:
+
+- name: 苍角
+  buff:
+      attack: 1000
+      ice_damage_bonus: 0.2
+- name: 耀嘉音
+  stars:
+      - level: 1
+        in_game:
+            damage_resistance: -0.18
+        buff:
+            damage_resistance: -0.18
+      - level: 2
+        in_game:
+            attack: 400
+        buff:
+            attack: 400
+  buff:
+      attack: 1200
+      common_damage_bonus: 0.2
+      critical_damage: 0.25
+- name: 浮波柚叶
+  buff:
+      attack: 1200

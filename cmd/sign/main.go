@@ -8,9 +8,9 @@ import (
 	"log"
 	"strings"
 	"time"
-	"zzz_helper/internal/config"
 	"zzz_helper/internal/utils"
 	"zzz_helper/internal/utils/lznet/lzhttp"
+	"zzz_helper/modules/zzz/config"
 )
 
 type MiyousheGameRole struct {

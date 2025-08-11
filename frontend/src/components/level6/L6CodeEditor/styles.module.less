@@ -1,0 +1,136 @@
+//.item {
+//  display: inline-flex;
+//  align-items: center;
+//
+//  label {
+//    display: inline-block;
+//    margin-right: 0.2em;
+//  }
+//}
+
+.divider {
+    height: 1px;
+    background-color: #0d1117;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 2rem;
+    padding: 0 1em;
+    color: #adbac7;
+    background-color: #2d2d2d;
+
+    :global {
+        .item {
+            display: inline-flex;
+            align-items: center;
+
+            label {
+                display: inline-block;
+                margin-right: 0.5em;
+            }
+        }
+        .select {
+            margin: 0;
+            padding: 1px 0.2em;
+            color: #adbac7;
+            background-color: #2d2d2d;
+            border: 1px solid rgba(#adbac7, 0.72);
+            border-radius: 1px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input,
+        button,
+        select {
+            margin: 0;
+        }
+
+        select {
+            max-width: 3em;
+            max-width: 8em;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0.5rem;
+            height: 0.5rem;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #2d333b;
+            border-radius: 0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(#adbac7, 0.58);
+            border-radius: 0;
+            &:hover {
+                background-color: #adbac7;
+            }
+        }
+    }
+}
+
+.editor {
+    :global {
+        ::-webkit-scrollbar {
+            width: 0.5rem;
+            height: 0.5rem;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #2d333b;
+            border-radius: 0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(#adbac7, 0.58);
+            border-radius: 0;
+            &:hover {
+                background-color: #adbac7;
+            }
+        }
+    }
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 2rem;
+    padding: 0 1em;
+    color: #adbac7;
+    font-size: 90%;
+    background-color: #2d2d2d;
+
+    .buttons {
+        .item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1em;
+            color: rgba(#adbac7, 0.72);
+            font-size: 12px;
+            background-color: transparent;
+            border: 1px dashed #2d2d2d;
+            cursor: pointer;
+            .iconfont {
+                margin-left: 4.4px; // ~4.4px
+            }
+            &:hover {
+                color: #adbac7;
+                border-color: #adbac7;
+            }
+        }
+    }
+
+    :global {
+        .infos {
+            .item {
+                display: inline-block;
+                margin-left: 2em;
+                font-feature-settings: 'tnum';
+            }
+        }
+    }
+}

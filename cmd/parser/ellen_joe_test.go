@@ -1,34 +1,35 @@
 package main
 
 import (
+	"os"
 	"testing"
-	"zzz_helper/internal/calc"
-	"zzz_helper/internal/models"
+	"zzz_helper/modules/zzz/calc"
+	models2 "zzz_helper/modules/zzz/models"
 )
 
 func TestEllenJoe(t *testing.T) {
-	err := calc.DamageFuzz(models.DamageFuzzParam{
-		Name:       "艾莲·乔",
-		Attribute:  models.AttrIce,
-		Star:       1,
-		Engine:     "深海访客",
-		DriverPath: "conf/drivers_all.yml",
-		TestData: models.TestData{
+	_, err := calc.DamageFuzz(models2.DamageFuzzParam{
+		Name:      "艾莲·乔",
+		Attribute: models2.AttrIce,
+		Star:      2,
+		Engine:    "深海访客",
+		TestData: models2.TestData{
 			LevelBase:          794,
 			MonsterBaseDefense: 60,
 			DamageMultiplier:   1.997, // 普攻第一段伤害
-			Attribute: models.CommonAttribute{
-				OutGame: models.AgentAttribute{},
-				InGame: models.AgentAttribute{
+			Attribute: models2.CommonAttribute{
+				OutGame: models2.AgentAttribute{},
+				InGame: models2.AgentAttribute{
 					//AttackBonus:      0.128,
-					DamageResistance: -0.2, // 怪物减抗
+					//DamageResistance: -0.2, // 怪物减抗
 					//CommonDamageBonus:      -0.3,
-					Attack:            1000, // 苍角buff
-					CommonDamageBonus: 0.2,  // 苍角核心被动额外能力增加冰伤20%
+					Attack:            1600,             // 嘉音buff
+					CommonDamageBonus: 0.2 + 0.24 + 0.9, // 嘉音增伤+莱特
+					CriticalDamage:    0.25 - 0.4,       // 嘉音爆伤
 				},
 			},
 		},
-	})
+	}, os.Stdout)
 	if err != nil {
 		t.Error(err)
 	}
