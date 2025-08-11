@@ -30,6 +30,14 @@ mihoyo_cookie: account_id_v2=xxxx; cookie_token_v2=xxxx
 
 该模块通过OCR识别，解析游戏中的驱动盘，保存至数据库，用于后续的计算。
 
+先下载OCR识别库，将他解压到当前目录下
+
+https://github.com/lz520520/zzz_helper/releases/download/Tesseract-OCR/Tesseract-OCR.7z
+
+目录结构如下
+
+![image-20250811112732662](readme.assets/image-20250811112732662.png)
+
 游戏中截图，可保存为图片拖拽到指定位置，或者直接`ctrl+V`粘贴，支持多张图片解析
 
 ![image-20250811101506309](readme.assets/image-20250811101506309.png)
