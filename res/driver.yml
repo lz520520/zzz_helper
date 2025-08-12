@@ -42,6 +42,12 @@
           attack_bonus: 0.1
   piece4:
       in_game:
-          attack_bonus: 0.24 # 队伍中任意角色通过[快速支援]入场时，全队角色获得1层[嘉音]，最多叠加3层，持续15秒，重复触发时刷新持续时间， 每拥有1层[嘉音]，通过[快速支援]入场的角色造成的伤害提升8%，该效果全队唯一。
+          common_damage_bonus: 0.24 # 队伍中任意角色通过[快速支援]入场时，全队角色获得1层[嘉音]，最多叠加3层，持续15秒，重复触发时刷新持续时间， 每拥有1层[嘉音]，通过[快速支援]入场的角色造成的伤害提升8%，该效果全队唯一。
       buff:
-          attack_bonus: 0.24
+          common_damage_bonus: 0.24
+- name: 山大王
+  piece4:
+      in_game:
+          critical_damage: 0.3
+      buff:
+          critical_damage: 0.3

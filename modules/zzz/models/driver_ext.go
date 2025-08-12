@@ -4,14 +4,12 @@ import (
 	_ "embed"
 	"fmt"
 	"gopkg.in/yaml.v3"
-	"zzz_helper/res"
+	"path/filepath"
+	"zzz_helper/internal/config"
+	"zzz_helper/internal/utils/file2"
 )
 
 type SDriversInfo []DriverSetAttribute
-
-var (
-	DriversInfos SDriversInfo
-)
 
 func (this SDriversInfo) GetInfo(name string) (info DriverSetAttribute, err error) {
 	for _, agentInfo := range this {
@@ -24,9 +22,13 @@ func (this SDriversInfo) GetInfo(name string) (info DriverSetAttribute, err erro
 	return
 }
 
-func init() {
-	err := yaml.Unmarshal(res.Drivers, &DriversInfos)
+func GetDriversInfos() (SDriversInfo, error) {
+	b, err := file2.ReadFileBytes(filepath.Join(config.CurrentPath, "conf/driver.yml"))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	var infos SDriversInfo
+
+	err = yaml.Unmarshal(b, &infos)
+	return infos, err
 }

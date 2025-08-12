@@ -16,11 +16,23 @@ interface DriverLogProps {
 }
 
 const DriverLogPage = React.forwardRef<DriverLogRef, DriverLogProps>((props, ref) => {
-    const [log, setLog] = useState("")
+    const l6editorRef = useRef<L6CodeEditorRef>(null);
+
 
     const logPrint = function (msg: string) {
-        setLog(msg);
+        if (l6editorRef.current) {
+            if (l6editorRef.current.getTextLength() > MAX_LOG_SIZE) {
+                l6editorRef.current.setText(msg)
+            } else {
+                l6editorRef.current.appendText(`${msg}\n`)
+            }
+        }
     };
+    const setLog = (msg: string) => {
+        if (l6editorRef.current) {
+            l6editorRef.current.setText(msg)
+        }
+    }
 
     useImperativeHandle(ref, () => ({
         setLog: setLog,
@@ -36,7 +48,7 @@ const DriverLogPage = React.forwardRef<DriverLogRef, DriverLogProps>((props, ref
     }, []);
     return (<Flex vertical style={{height: '100%'}} flex={"0 0 140px"}>
         <span className={globalStyles['l6-label']}>日志</span>
-        <L6CodeEditor value={log} onChange={setLog} height={'calc( 100% - 32px )'} simpleMode/>
+        <L6CodeEditor ref={l6editorRef} height={'calc( 100% - 32px )'} scrollMode simpleMode/>
     </Flex>)
 })
 

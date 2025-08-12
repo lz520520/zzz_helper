@@ -4,12 +4,10 @@ import (
 	_ "embed"
 	"fmt"
 	"gopkg.in/yaml.v3"
+	"path/filepath"
+	"zzz_helper/internal/config"
+	"zzz_helper/internal/utils/file2"
 	"zzz_helper/modules/zzz/models"
-	"zzz_helper/res"
-)
-
-var (
-	EngineInfos SEngineInfo
 )
 
 type SEngineInfo []models.WeaponEngineInfo
@@ -28,9 +26,13 @@ func (this SEngineInfo) GetInfo(name string, star int) (info models.WeaponEngine
 	return
 }
 
-func init() {
-	err := yaml.Unmarshal(res.Engines, &EngineInfos)
+func GetEngineInfos() (SEngineInfo, error) {
+	b, err := file2.ReadFileBytes(filepath.Join(config.CurrentPath, "conf/engines.yml"))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	var infos SEngineInfo
+
+	err = yaml.Unmarshal(b, &infos)
+	return infos, err
 }

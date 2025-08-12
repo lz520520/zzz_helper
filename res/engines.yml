@@ -52,7 +52,7 @@
           critical_rate: 0.24
         in_game:
           critical_damage: 0.5
-          damage_resistance: 0.25
+          damage_resistance: -0.25
 - name: 青溟笼舍
   stars:
       - level: 1
@@ -105,3 +105,35 @@
             attack_bonus: 0.16
         buff:
             attack_bonus: 0.16
+- name: 玲珑妆匣
+  stars:
+      - level: 1
+        out_game:
+            attack: 713
+            attack_bonus: 0.3
+        in_game:
+            common_damage_bonus: 0.2
+        buff:
+            common_damage_bonus: 0.2
+- name: 狸法七变化
+  stars:
+      - level: 1
+        out_game:
+            attack: 713
+            energy_regen: 0.6
+        in_game:
+            anomaly_mastery: 30
+            anomaly_proficiency: 60
+        buff:
+            anomaly_proficiency: 60
+- name: 焰心桂冠
+  stars:
+      - level: 1
+        out_game:
+            attack: 713
+            impact: 0.18
+        in_game:
+            impact: 0.25
+            critical_damage: 0.3
+        buff:
+            critical_damage: 0.3

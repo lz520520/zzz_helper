@@ -13,7 +13,7 @@ import {models, zzz_models} from "../../../../wailsjs/go/models";
 import CommonAttribute = models.CommonAttribute;
 import DamageFuzzParam = models.DamageFuzzParam;
 import AgentAttribute = models.AgentAttribute;
-import {DriverFuzz, GetProxyBuff, ReadDriverCache} from "../../../../wailsjs/go/main_control/Control";
+import {DriverFuzz, GetInfos, GetProxyBuff, ReadDriverCache} from "../../../../wailsjs/go/main_control/Control";
 import DriverFuzzResp = zzz_models.DriverFuzzResp;
 import {EventsOff, EventsOn} from "../../../../wailsjs/runtime";
 import {uuid} from "@/utils/uuid";
@@ -42,11 +42,6 @@ const formInitValues = {
     tmp_proxy2_engine: "",
     tmp_proxy2_engine_star: 1,
 }
-const proxys = ["", "艾莲·乔", "星见雅", "仪玄", "苍角", "耀嘉音"]
-const engines = ["","深海访客",  "霰落星殿", "青溟笼舍", "好斗的阿炮"]
-
-const drivers = ["",'折枝剑歌', '河豚电音', '啄木鸟电音', '极地重金属', "静听佳音", "山大王", "摇摆爵士", "原始朋克"]
-
 
 
 
@@ -70,6 +65,9 @@ const Content: React.FC<{id?: string}> = ({id}) => {
     const [driverOpen, setDriverOpen] = useState(false)
     const [driverHistoryOpen, setDriverHistoryOpen] = useState(false)
 
+    const [proxys, setProxys] = useState<string[]>([])
+    const [engines, setEngines] = useState<string[]>([])
+    const [drivers, setDrivers] = useState<string[]>([])
 
     const [board, setBoard] = useState("")
 
@@ -174,6 +172,39 @@ const Content: React.FC<{id?: string}> = ({id}) => {
         message.success("获取历史成功")
 
     }
+
+    useEffect(() => {
+        const fetch = async() => {
+            {
+                const resp =  await GetInfos("agent")
+                if (!resp.status) {
+                    message.error(resp.err)
+                    return
+                }
+                setProxys(["", ...resp.msg])
+            }
+
+            {
+                const resp =  await GetInfos("engine")
+                if (!resp.status) {
+                    message.error(resp.err)
+                    return
+                }
+                setEngines(["", ...resp.msg])
+            }
+
+            {
+                const resp =  await GetInfos("driver")
+                if (!resp.status) {
+                    message.error(resp.err)
+                    return
+                }
+                setDrivers(["", ...resp.msg])
+            }
+
+        }
+        fetch()
+    }, []);
 
     return (<Allotment className={globalStyles['l6-frame']}>
         <Allotment.Pane minSize={100} preferredSize={`36%`}>

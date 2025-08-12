@@ -108,10 +108,11 @@ func (this *Control) DriverParser(eventID string, files []zzz_models.FileInfo, o
 			emitWriter.WriteString(fmt.Sprintf("[!] disk already exist"))
 		} else {
 			err = cacheDB.Insert(&db_zzz.DriverCacheDB{
-				ID:       id,
-				Name:     disk.Name,
-				Position: disk.Position,
-				Data:     string(dataBytes),
+				ID:        id,
+				Name:      disk.Name,
+				Position:  disk.Position,
+				Data:      string(dataBytes),
+				Timestamp: time.Now().Format(time.DateTime),
 			})
 			if err != nil {
 				emitWriter.WriteString(fmt.Sprintf("[-] %s", err.Error()))
@@ -145,6 +146,8 @@ func nameFix(name string) string {
 		name = "河豚电音"
 	} else if regexp.MustCompile(`\p{Han}木鸟电音`).MatchString(name) {
 		name = "啄木鸟电音"
+	} else if regexp.MustCompile(`\p{Han}地重金属`).MatchString(name) {
+		name = "极地重金属"
 	}
 	return strings.TrimSpace(name)
 }

@@ -9,6 +9,12 @@ type CommonResp struct {
 	Err    string `json:"err"`
 }
 
+type CommonSliceResp struct {
+	Status bool     `json:"status"`
+	Msg    []string `json:"msg"`
+	Err    string   `json:"err"`
+}
+
 type CommonBytesResp struct {
 	Status bool   `json:"status"`
 	Bytes  []byte `json:"bytes"`

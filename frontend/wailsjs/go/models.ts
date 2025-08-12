@@ -130,6 +130,22 @@ export namespace common_model {
 	        this.err = source["err"];
 	    }
 	}
+	export class CommonSliceResp {
+	    status: boolean;
+	    msg: string[];
+	    err: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CommonSliceResp(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.status = source["status"];
+	        this.msg = source["msg"];
+	        this.err = source["err"];
+	    }
+	}
 	export class DBInfo {
 	    info: Record<string, any>;
 	

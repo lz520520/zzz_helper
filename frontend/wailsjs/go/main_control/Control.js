@@ -22,6 +22,10 @@ export function GetClientConfigOptionsWithName(arg1) {
   return window['go']['main_control']['Control']['GetClientConfigOptionsWithName'](arg1);
 }
 
+export function GetInfos(arg1) {
+  return window['go']['main_control']['Control']['GetInfos'](arg1);
+}
+
 export function GetProxyBuff(arg1) {
   return window['go']['main_control']['Control']['GetProxyBuff'](arg1);
 }

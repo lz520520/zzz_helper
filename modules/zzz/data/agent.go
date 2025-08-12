@@ -4,12 +4,10 @@ import (
 	_ "embed"
 	"fmt"
 	"gopkg.in/yaml.v3"
+	"path/filepath"
+	"zzz_helper/internal/config"
+	"zzz_helper/internal/utils/file2"
 	"zzz_helper/modules/zzz/models"
-	"zzz_helper/res"
-)
-
-var (
-	AgentInfos SAgentInfo
 )
 
 type SAgentInfo []models.AgentInfo
@@ -24,10 +22,13 @@ func (this SAgentInfo) GetInfo(name string) (info models.AgentInfo, err error) {
 	err = fmt.Errorf("agent info not found")
 	return
 }
-
-func init() {
-	err := yaml.Unmarshal(res.Agents, &AgentInfos)
+func GetAgentInfos() (SAgentInfo, error) {
+	b, err := file2.ReadFileBytes(filepath.Join(config.CurrentPath, "conf/agents.yml"))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	var infos SAgentInfo
+
+	err = yaml.Unmarshal(b, &infos)
+	return infos, err
 }

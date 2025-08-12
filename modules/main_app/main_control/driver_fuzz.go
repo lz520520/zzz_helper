@@ -8,17 +8,32 @@ import (
 	"time"
 	"zzz_helper/internal/config"
 	"zzz_helper/internal/db/db_zzz"
-	"zzz_helper/internal/mylog"
 	"zzz_helper/internal/utils/file2"
 	"zzz_helper/modules/main_app/zzz_models"
+	"zzz_helper/modules/module_common/common_model"
 	"zzz_helper/modules/zzz/calc"
 	"zzz_helper/modules/zzz/data"
 	"zzz_helper/modules/zzz/models"
 )
 
 func (this *Control) GetProxyBuff(req zzz_models.TestProxyBuffReq) (resp zzz_models.TestProxyBuffResp) {
+	driverInfos, err := models.GetDriversInfos()
+	if err != nil {
+		resp.Err = err.Error()
+		return
+	}
+	engineInfos, err := data.GetEngineInfos()
+	if err != nil {
+		resp.Err = err.Error()
+		return
+	}
+	agentInfos, err := data.GetAgentInfos()
+	if err != nil {
+		resp.Err = err.Error()
+		return
+	}
 	if req.Proxy1.Name != "" {
-		proxyInfo, err := data.AgentInfos.GetInfo(req.Proxy1.Name)
+		proxyInfo, err := agentInfos.GetInfo(req.Proxy1.Name)
 		if err != nil {
 			resp.Err = err.Error()
 			return
@@ -32,7 +47,7 @@ func (this *Control) GetProxyBuff(req zzz_models.TestProxyBuffReq) (resp zzz_mod
 	}
 
 	if req.Proxy1.Engine != "" {
-		engineInfo, err := data.EngineInfos.GetInfo(req.Proxy1.Engine, req.Proxy1.EngineStar)
+		engineInfo, err := engineInfos.GetInfo(req.Proxy1.Engine, req.Proxy1.EngineStar)
 		if err != nil {
 			resp.Err = err.Error()
 			return
@@ -41,7 +56,7 @@ func (this *Control) GetProxyBuff(req zzz_models.TestProxyBuffReq) (resp zzz_mod
 	}
 
 	if req.Proxy1.DriverSet != "" {
-		driverSet, err := models.DriversInfos.GetInfo(req.Proxy1.DriverSet)
+		driverSet, err := driverInfos.GetInfo(req.Proxy1.DriverSet)
 		if err != nil {
 			resp.Err = err.Error()
 			return
@@ -50,7 +65,7 @@ func (this *Control) GetProxyBuff(req zzz_models.TestProxyBuffReq) (resp zzz_mod
 	}
 
 	if req.Proxy2.Name != "" {
-		proxyInfo, err := data.AgentInfos.GetInfo(req.Proxy2.Name)
+		proxyInfo, err := agentInfos.GetInfo(req.Proxy2.Name)
 		if err != nil {
 			resp.Err = err.Error()
 			return
@@ -64,7 +79,7 @@ func (this *Control) GetProxyBuff(req zzz_models.TestProxyBuffReq) (resp zzz_mod
 	}
 
 	if req.Proxy2.Engine != "" {
-		engineInfo, err := data.EngineInfos.GetInfo(req.Proxy2.Engine, req.Proxy2.EngineStar)
+		engineInfo, err := engineInfos.GetInfo(req.Proxy2.Engine, req.Proxy2.EngineStar)
 		if err != nil {
 			resp.Err = err.Error()
 			return
@@ -73,7 +88,7 @@ func (this *Control) GetProxyBuff(req zzz_models.TestProxyBuffReq) (resp zzz_mod
 	}
 
 	if req.Proxy2.DriverSet != "" {
-		driverSet, err := models.DriversInfos.GetInfo(req.Proxy2.DriverSet)
+		driverSet, err := driverInfos.GetInfo(req.Proxy2.DriverSet)
 		if err != nil {
 			resp.Err = err.Error()
 			return
@@ -87,11 +102,17 @@ func (this *Control) GetProxyBuff(req zzz_models.TestProxyBuffReq) (resp zzz_mod
 
 func (this *Control) DriverFuzz(eventID string, params models.DamageFuzzParam) (resp zzz_models.DriverFuzzResp) {
 	emitWriter := NewEmitWriter(func(msg string) {
-		mylog.FileLogger.Debug().Msgf("%s\n", msg)
+		//mylog.FileLogger.Debug().Msgf("%s\n", msg)
 		this.eventEmitCallBack(fmt.Sprintf("driver_fuzz_%s", eventID), msg)
 	})
 
-	info, err := data.AgentInfos.GetInfo(params.Name)
+	agentInfos, err := data.GetAgentInfos()
+	if err != nil {
+		resp.Err = err.Error()
+		return
+	}
+
+	info, err := agentInfos.GetInfo(params.Name)
 	if err != nil {
 		resp.Err = err.Error()
 		return
@@ -161,5 +182,46 @@ func (this *Control) DriverFuzz(eventID string, params models.DamageFuzzParam) (
 
 	db_zzz.GetDriverFuzzDB().Insert(&fuzzDB)
 
+	return
+}
+
+func (this *Control) GetInfos(infoType string) (resp common_model.CommonSliceResp, err error) {
+	resp.Msg = make([]string, 0)
+	switch infoType {
+	case "agent":
+		infos, err := data.GetAgentInfos()
+		if err != nil {
+			resp.Err = err.Error()
+			break
+		}
+		for _, info := range infos {
+			resp.Msg = append(resp.Msg, info.Name)
+		}
+		resp.Status = true
+
+	case "engine":
+		infos, err := data.GetEngineInfos()
+		if err != nil {
+			resp.Err = err.Error()
+			break
+		}
+		for _, info := range infos {
+			resp.Msg = append(resp.Msg, info.Name)
+		}
+		resp.Status = true
+	case "driver":
+		infos, err := models.GetDriversInfos()
+		if err != nil {
+			resp.Err = err.Error()
+			break
+		}
+		for _, info := range infos {
+			resp.Msg = append(resp.Msg, info.Name)
+		}
+		resp.Status = true
+	default:
+		resp.Err = "info type not support"
+
+	}
 	return
 }

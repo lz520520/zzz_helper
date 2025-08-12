@@ -4,16 +4,30 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"io"
+	"time"
 	data2 "zzz_helper/modules/zzz/data"
 	models2 "zzz_helper/modules/zzz/models"
 )
 
 func DamageFuzz(param models2.DamageFuzzParam, writer io.StringWriter) (*models2.DamageCalcResult, error) {
-	agentInfo, err := data2.AgentInfos.GetInfo(param.Name)
+	driverInfos, err := models2.GetDriversInfos()
 	if err != nil {
 		return nil, err
 	}
-	engineInfo, err := data2.EngineInfos.GetInfo(param.Engine, param.EngineStar)
+	engineInfos, err := data2.GetEngineInfos()
+	if err != nil {
+		return nil, err
+	}
+	agentInfos, err := data2.GetAgentInfos()
+	if err != nil {
+		return nil, err
+	}
+
+	agentInfo, err := agentInfos.GetInfo(param.Name)
+	if err != nil {
+		return nil, err
+	}
+	engineInfo, err := engineInfos.GetInfo(param.Engine, param.EngineStar)
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +50,8 @@ func DamageFuzz(param models2.DamageFuzzParam, writer io.StringWriter) (*models2
 
 	maxOutput := 0.0
 	result := &models2.DamageCalcResult{}
+	start := time.Now()
+	var lastLogTime time.Time
 	for _, disk1 := range collection.Disk1 {
 		for _, disk2 := range collection.Disk2 {
 			for _, disk3 := range collection.Disk3 {
@@ -46,7 +62,7 @@ func DamageFuzz(param models2.DamageFuzzParam, writer io.StringWriter) (*models2
 							if param.DriverFilter != nil && !param.DriverFilter(disks) {
 								continue
 							}
-							set := models2.DriverDiskSet{Disks: disks}
+							set := models2.DriverDiskSet{Disks: disks, FullDriverInfos: driverInfos}
 							err = set.Parse()
 							if err != nil {
 								return nil, err
@@ -58,7 +74,11 @@ func DamageFuzz(param models2.DamageFuzzParam, writer io.StringWriter) (*models2
 							damageParam.Stun = param.Stun
 							tmp, err := DamageCalc(damageParam, param.InGameAttrFilter)
 							if err == nil {
-								writer.WriteString(fmt.Sprintf("[*] 伤害计算: %v", tmp.Output))
+								now := time.Now()
+								if now.Sub(lastLogTime) >= 2*time.Second {
+									lastLogTime = now
+									writer.WriteString(fmt.Sprintf("[*] 伤害计算: %v", tmp.Output))
+								}
 
 								if tmp.Output > maxOutput {
 									maxOutput = tmp.Output
@@ -73,10 +93,10 @@ func DamageFuzz(param models2.DamageFuzzParam, writer io.StringWriter) (*models2
 		}
 	}
 	s, _ := yaml.Marshal(result)
-	writer.WriteString(fmt.Sprintf(`[+] 
+	writer.WriteString(fmt.Sprintf(`[+] 用时 %s
 【期望】
 %s
-`, string(s)))
+`, time.Now().Sub(start).String(), string(s)))
 	return result, nil
 }
 
@@ -137,6 +157,8 @@ func DamageCalc(param models2.DamageParam, inGameAttrFilter func(attr models2.Ag
 	agentInGameAttribute.AddWithoutBonus(agentOutGameAttribute)
 	agentInGameAttribute.Add(param.WeaponEngine.InGame)
 	agentInGameAttribute.Add(param.AgentInfo.CorePassive.InGame)
+	// 部分驱动盘触发有条件，所以单独解析
+	param.DriverDisks.ParseInGame(agentInGameAttribute)
 	agentInGameAttribute.Add(param.DriverDisks.SetAttribute.InGame)
 
 	for _, s := range star {

@@ -14,6 +14,8 @@ export function DynamicFormGenerate(arg1:common_model.DynamicFormReq):Promise<co
 
 export function GetClientConfigOptionsWithName(arg1:string):Promise<common_model.CommonConfigOptionsResp>;
 
+export function GetInfos(arg1:string):Promise<common_model.CommonSliceResp>;
+
 export function GetProxyBuff(arg1:zzz_models.TestProxyBuffReq):Promise<zzz_models.TestProxyBuffResp>;
 
 export function GetTaskStatus(arg1:common_model.CommonReq):Promise<common_model.TaskStatusResp>;

@@ -6,19 +6,19 @@ import (
 )
 
 func TestCriticalImprove(t *testing.T) {
-	criticalDamage := 1.2 + 0.8 + 0.3 + 0.72
+	criticalDamage := 2.8
 	criticalRate := 0.73 + 0.27
-	attack := 2920
+	attack := 3921
 	rate, damage := CriticalImprove(models.CriticalParam{
 		CriticalDamage: criticalDamage,
 		CriticalRate:   criticalRate,
 	}, 1)
-	attackImprove := AttackBonusImprove(1623, float64(attack), 1)
+	attackImprove := AttackBonusImprove(1651, float64(attack), 1)
 
 	t.Logf("局内暴击: %.2f%%, 局内爆伤: %.2f%%, 局内攻击: %v", criticalRate*100, criticalDamage*100, attack)
 	t.Logf("暴击词条收益: %.2f%%, 爆伤词条收益: %.2f%%, 大攻击词条收益: %.2f%%", rate*100, damage*100, attackImprove*100)
 
-	expectAttack := AttackBonusExpected(1623, damage, 1)
+	expectAttack := AttackBonusExpected(1651, damage, 1)
 	t.Logf("期望攻击力: %v", expectAttack)
 
 }

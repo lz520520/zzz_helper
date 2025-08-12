@@ -32,28 +32,31 @@ type DriverDiskSet struct {
 	AttackBonus  float64 // 攻击加成
 	HPBonus      float64
 	SetAttribute CommonAttribute
+
+	SetExtendInfo SetExtendInfo
+
+	FullDriverInfos SDriversInfo
 }
 
 func (d *DriverDiskSet) Parse() error {
 	if len(d.Disks) > 6 || len(d.Disks) == 0 {
 		return fmt.Errorf("disks count is error")
 	}
-	setAttr := SetAttribute{}
 	for _, disk := range d.Disks {
 		switch disk.Name {
 		case "极地重金属":
-			setAttr.PolarMetal += 1
+			d.SetExtendInfo.PolarMetal += 1
 		case "河豚电音":
-			setAttr.PufferElectro += 1
+			d.SetExtendInfo.PufferElectro += 1
 		case "啄木鸟电音":
-			setAttr.WoodpeckerElectro += 1
+			d.SetExtendInfo.WoodpeckerElectro += 1
 		case "折枝剑歌":
-			setAttr.BranchBladeSong += 1
+			d.SetExtendInfo.BranchBladeSong += 1
 		case "云岿如我":
-			setAttr.YKRW += 1
+			d.SetExtendInfo.YKRW += 1
 		}
 	}
-	err := setAttr.Parse(d)
+	err := d.ParseOutGame()
 	if err != nil {
 		return err
 	}
@@ -62,71 +65,81 @@ func (d *DriverDiskSet) Parse() error {
 	}
 	return nil
 }
+func (this *DriverDiskSet) ParseInGame(attr AgentAttribute) {
+	if this.SetExtendInfo.BranchBladeSong >= 4 {
+		info, _ := this.FullDriverInfos.GetInfo("折枝剑歌")
+		if attr.AnomalyMastery >= 115 {
+			this.SetAttribute.InGame.CriticalDamage += info.Piece4.InGame.CriticalDamage
+		}
+		this.SetAttribute.InGame.CriticalRate += info.Piece4.InGame.CriticalRate
 
-type SetAttribute struct {
+	}
+}
+
+func (this *DriverDiskSet) ParseOutGame() error {
+	if this.SetExtendInfo.PolarMetal >= 2 {
+		info, _ := this.FullDriverInfos.GetInfo("极地重金属")
+		this.SetAttribute.OutGame.Add(info.Piece2.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece2.InGame)
+	}
+	if this.SetExtendInfo.PolarMetal >= 4 {
+		info, _ := this.FullDriverInfos.GetInfo("极地重金属")
+		this.SetAttribute.OutGame.Add(info.Piece4.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece4.InGame)
+	}
+
+	if this.SetExtendInfo.PufferElectro >= 2 {
+		info, _ := this.FullDriverInfos.GetInfo("河豚电音")
+		this.SetAttribute.OutGame.Add(info.Piece2.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece2.InGame)
+	}
+	if this.SetExtendInfo.PufferElectro >= 4 {
+		info, _ := this.FullDriverInfos.GetInfo("河豚电音")
+		this.SetAttribute.OutGame.Add(info.Piece4.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece4.InGame)
+	}
+
+	if this.SetExtendInfo.BranchBladeSong >= 2 {
+		info, _ := this.FullDriverInfos.GetInfo("折枝剑歌")
+		this.SetAttribute.OutGame.Add(info.Piece2.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece2.InGame)
+	}
+	if this.SetExtendInfo.BranchBladeSong >= 4 {
+		info, _ := this.FullDriverInfos.GetInfo("折枝剑歌")
+		this.SetAttribute.OutGame.Add(info.Piece4.OutGame)
+		//this.SetAttribute.InGame.Add(info.Piece4.InGame)
+	}
+
+	if this.SetExtendInfo.WoodpeckerElectro >= 2 {
+		info, _ := this.FullDriverInfos.GetInfo("啄木鸟电音")
+		this.SetAttribute.OutGame.Add(info.Piece2.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece2.InGame)
+	}
+	if this.SetExtendInfo.WoodpeckerElectro >= 4 {
+		info, _ := this.FullDriverInfos.GetInfo("啄木鸟电音")
+		this.SetAttribute.OutGame.Add(info.Piece4.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece4.InGame)
+	}
+
+	if this.SetExtendInfo.YKRW >= 2 {
+		info, _ := this.FullDriverInfos.GetInfo("云岿如我")
+		this.SetAttribute.OutGame.Add(info.Piece2.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece2.InGame)
+	}
+	if this.SetExtendInfo.YKRW >= 4 {
+		info, _ := this.FullDriverInfos.GetInfo("云岿如我")
+		this.SetAttribute.OutGame.Add(info.Piece4.OutGame)
+		this.SetAttribute.InGame.Add(info.Piece4.InGame)
+	}
+	return nil
+}
+
+type SetExtendInfo struct {
 	PolarMetal        int // 极地重金属
 	PufferElectro     int // 河豚电音
 	WoodpeckerElectro int // 啄木鸟电音
 	BranchBladeSong   int // 折枝剑歌
 	YKRW              int // 云岿如我
-}
-
-func (this *SetAttribute) Parse(set *DriverDiskSet) error {
-	if this.PolarMetal >= 2 {
-		info, _ := DriversInfos.GetInfo("极地重金属")
-		set.SetAttribute.OutGame.Add(info.Piece2.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece2.InGame)
-	}
-	if this.PolarMetal >= 4 {
-		info, _ := DriversInfos.GetInfo("极地重金属")
-		set.SetAttribute.OutGame.Add(info.Piece4.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece4.InGame)
-	}
-
-	if this.PufferElectro >= 2 {
-		info, _ := DriversInfos.GetInfo("河豚电音")
-		set.SetAttribute.OutGame.Add(info.Piece2.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece2.InGame)
-	}
-	if this.PufferElectro >= 4 {
-		info, _ := DriversInfos.GetInfo("河豚电音")
-		set.SetAttribute.OutGame.Add(info.Piece4.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece4.InGame)
-	}
-
-	if this.BranchBladeSong >= 2 {
-		info, _ := DriversInfos.GetInfo("折枝剑歌")
-		set.SetAttribute.OutGame.Add(info.Piece2.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece2.InGame)
-	}
-	if this.BranchBladeSong >= 4 {
-		info, _ := DriversInfos.GetInfo("折枝剑歌")
-		set.SetAttribute.OutGame.Add(info.Piece4.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece4.InGame)
-	}
-
-	if this.WoodpeckerElectro >= 2 {
-		info, _ := DriversInfos.GetInfo("啄木鸟电音")
-		set.SetAttribute.OutGame.Add(info.Piece2.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece2.InGame)
-	}
-	if this.WoodpeckerElectro >= 4 {
-		info, _ := DriversInfos.GetInfo("啄木鸟电音")
-		set.SetAttribute.OutGame.Add(info.Piece4.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece4.InGame)
-	}
-
-	if this.YKRW >= 2 {
-		info, _ := DriversInfos.GetInfo("云岿如我")
-		set.SetAttribute.OutGame.Add(info.Piece2.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece2.InGame)
-	}
-	if this.YKRW >= 4 {
-		info, _ := DriversInfos.GetInfo("云岿如我")
-		set.SetAttribute.OutGame.Add(info.Piece4.OutGame)
-		set.SetAttribute.InGame.Add(info.Piece4.InGame)
-	}
-	return nil
 }
 
 type DriverSetAttribute struct {

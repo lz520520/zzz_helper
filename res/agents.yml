@@ -38,7 +38,11 @@
       defense: 606
       critical_rate: 0.05
       critical_damage: 0.5
+      anomaly_mastery: 116
   core_passive:
+      out_game:
+          attack: 75
+          anomaly_proficiency: 90
       in_game:
           common_damage_bonus: 0.6 # 额外能力： 霜月伤害提升
 #          damage_resistance: -0.3 # 紊乱触发减抗
@@ -54,6 +58,7 @@
       critical_damage: 0.5
   core_passive:
       out_game:
+          attack: 75
           critical_rate: 0.144
       in_game:
           common_damage_bonus: 0.3
@@ -78,7 +83,6 @@
           critical_rate: 0.144
           hp: 420
       in_game:
-
 - name: 苍角
   buff:
       attack: 1000
@@ -102,3 +106,39 @@
 - name: 浮波柚叶
   buff:
       attack: 1200
+- name: 莱特
+  stars:
+      - level: 1
+        in_game:
+            damage_resistance: -0.10
+        buff:
+            damage_resistance: -0.10
+      - level: 2
+        in_game:
+            stun_damage_multiplier: 0.25
+            fire_damage_bonus: 0.15
+            ice_damage_bonus: 0.15
+        buff:
+            stun_damage_multiplier: 0.25
+            fire_damage_bonus: 0.15
+            ice_damage_bonus: 0.15
+  buff:
+      fire_damage_bonus: 0.75
+      ice_damage_bonus: 0.75
+      damage_resistance: -0.15
+- name: 橘福福
+  stars:
+      - level: 1
+        in_game:
+            critical_rate: 0.12
+            stun_damage_multiplier: 0.35
+        buff:
+            stun_damage_multiplier: 0.35
+      - level: 2
+        in_game:
+            critical_damage: 0.22
+        buff:
+            critical_damage: 0.22
+  buff:
+      critical_damage: 0.5
+
